@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("user")
+  displayName  String?
+  email        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  projects      Project[]
+  punishments   Punishment[]  @relation("PunishmentCreator")
+  notifications Notification[]
+  rerunRequests ProjectRerunRequest[] @relation("RerunRequester")
+  rerunReviews  ProjectRerunRequest[] @relation("RerunReviewer")
+}
+
+model Supplier {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique
+  rank          Int      @unique
+  qualEquipment Boolean  @default(false)
+  qualSystem    Boolean  @default(false)
+  activeProjectCount Int  @default(0)
+  contactName   String?
+  contactPhone  String?
+  email         String?
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  punishments    Punishment[]
+  lotteryRecords LotteryRecord[]
+}
+
+model Punishment {
+  id         Int      @id @default(autoincrement())
+  supplierId Int
+  startDate  DateTime
+  endDate    DateTime
+  reason     String?
+  createdBy  Int?
+  createdAt  DateTime @default(now())
+
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  creator  User?    @relation("PunishmentCreator", fields: [createdBy], references: [id])
+}
+
+model Project {
+  id           Int      @id @default(autoincrement())
+  name         String
+  overview     String?
+  budgetWan    Decimal
+  secretLevel  String
+  managerName  String
+  contact      String
+  createdBy    Int
+  status       String   @default("pending")
+  resultNotice String?
+  emailStatus  String?
+  createdAt    DateTime @default(now())
+
+  creator        User            @relation(fields: [createdBy], references: [id])
+  lotteryRecords LotteryRecord[]
+  notifications  Notification[]
+  rerunRequests  ProjectRerunRequest[]
+}
+
+model ProjectRerunRequest {
+  id            Int       @id @default(autoincrement())
+  projectId     Int
+  requesterId   Int
+  status        String    @default("pending")
+  reason        String?
+  reviewComment String?
+  reviewerId    Int?
+  reviewedAt    DateTime?
+  usedAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  project     Project                    @relation(fields: [projectId], references: [id])
+  requester   User                       @relation("RerunRequester", fields: [requesterId], references: [id])
+  reviewer    User?                      @relation("RerunReviewer", fields: [reviewerId], references: [id])
+  attachments ProjectRerunRequestFile[]
+}
+
+model ProjectRerunRequestFile {
+  id          Int      @id @default(autoincrement())
+  requestId   Int
+  originalName String
+  storedName   String
+  mimeType     String?
+  size         Int
+  filePath     String
+  createdAt    DateTime @default(now())
+
+  request ProjectRerunRequest @relation(fields: [requestId], references: [id])
+}
+
+model LotteryRecord {
+  id               Int      @id @default(autoincrement())
+  projectId        Int
+  winnerSupplierId Int?
+  winnerRank       Int?
+  pointerBefore    Int      @default(0)
+  pointerAfter     Int      @default(0)
+  roundNo          Int      @default(1)
+  lotteryTime      DateTime @default(now())
+
+  project        Project   @relation(fields: [projectId], references: [id])
+  winnerSupplier Supplier? @relation(fields: [winnerSupplierId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  content   String?
+  isRead    Boolean  @default(false)
+  projectId Int?
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+}
+
+model SystemConfig {
+  key   String @id
+  value String
+}
