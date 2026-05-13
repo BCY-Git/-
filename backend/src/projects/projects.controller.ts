@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Query, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
 import { randomUUID } from 'crypto'
-import { extname, resolve } from 'path'
+import { extname, relative, resolve } from 'path'
 import { mkdirSync } from 'fs'
+import { realpath } from 'fs/promises'
 import { AuthGuard } from '../common/auth.guard'
 import { CurrentUser } from '../common/current-user.decorator'
 import { Roles } from '../common/roles.decorator'
@@ -16,6 +17,15 @@ mkdirSync(uploadDir, { recursive: true })
 
 // 二次抽取材料按现场要求只接收 PDF，保存到后端本地上传目录。
 const allowedExtensions = new Set(['.pdf'])
+
+async function resolveUploadFilePath(filePath: string) {
+  const [uploadRoot, targetPath] = await Promise.all([realpath(uploadDir), realpath(filePath)])
+  const relativePath = relative(uploadRoot, targetPath)
+  if (relativePath.startsWith('..') || resolve(uploadRoot, relativePath) !== targetPath) {
+    throw new BadRequestException('材料文件路径非法')
+  }
+  return targetPath
+}
 
 @Controller()
 @UseGuards(AuthGuard, RolesGuard)
@@ -114,7 +124,7 @@ export class ProjectsController {
   ) {
     // 验收材料下载入口：先做业务鉴权，再交给 Express 下载文件。
     const file = await this.projectsService.getRerunAttachment(user, id, fileId)
-    return res.download(resolve(file.filePath), file.originalName)
+    return res.download(await resolveUploadFilePath(file.filePath), file.originalName)
   }
 
   @Get('lottery-records')

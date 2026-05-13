@@ -12,6 +12,8 @@ cd "$(dirname "$PROJECT_ROOT")"
 
 COPYFILE_DISABLE=1 zip -qry "${OUTPUT_DIR}/${PACKAGE_NAME}" "$PROJECT_NAME" \
   -x "${PROJECT_NAME}/.git/*" \
+  -x "${PROJECT_NAME}/.scannerwork/*" \
+  -x "${PROJECT_NAME}/.playwright-mcp/*" \
   -x "${PROJECT_NAME}/backend/node_modules/*" \
   -x "${PROJECT_NAME}/backend/dist/*" \
   -x "${PROJECT_NAME}/backend/uploads/*" \

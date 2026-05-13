@@ -17,20 +17,34 @@
         <el-button type="primary" size="large" style="width:100%; margin-top:8px;" :loading="loading" @click="submit">
           登录
         </el-button>
+        <el-button v-if="ssoEnabled" size="large" style="width:100%; margin:12px 0 0;" @click="loginWithSso">
+          统一认证登录
+        </el-button>
       </el-form>
     </div>
   </section>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { api, API_BASE } from '../api/client'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
 const loading = ref(false)
+const ssoEnabled = ref(false)
 const form = reactive({ username: '', password: '' })
+
+onMounted(async () => {
+  try {
+    const status = await api('/auth/sso/status')
+    ssoEnabled.value = Boolean(status?.enabled)
+  } catch {
+    ssoEnabled.value = false
+  }
+})
 
 async function submit() {
   loading.value = true
@@ -40,5 +54,10 @@ async function submit() {
   } finally {
     loading.value = false
   }
+}
+
+function loginWithSso() {
+  const returnUrl = encodeURIComponent('/')
+  window.location.href = `${API_BASE}/auth/sso/start?return_url=${returnUrl}`
 }
 </script>
