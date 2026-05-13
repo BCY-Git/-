@@ -120,23 +120,6 @@ SMTP_FROM=
 SMTP_USERNAME=
 SMTP_PASSWORD=
 SMTP_TLS=false
-
-# 学校统一认证 OAuth2/OIDC 参数；现场拿到资料后再启用。
-SSO_ENABLED=false
-SSO_AUTHORIZATION_URL=
-SSO_TOKEN_URL=
-SSO_USERINFO_URL=
-SSO_CLIENT_ID=
-SSO_CLIENT_SECRET=
-SSO_REDIRECT_URI=
-SSO_SCOPE="openid profile email"
-SSO_FRONTEND_CALLBACK_URL="http://服务器IP/sso/callback"
-SSO_USERNAME_FIELD="sub,username,account,user_name"
-SSO_DISPLAY_NAME_FIELD="name,display_name,realName,nickname"
-SSO_EMAIL_FIELD="email,mail"
-SSO_DEFAULT_ROLE=user
-SSO_ADMIN_USERNAMES=
-SSO_SUPER_ADMIN_USERNAMES=
 EOF
     chmod 600 "$env_file"
     printf '%s\n' "初始超级管理员：admin"

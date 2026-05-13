@@ -46,21 +46,6 @@ bash deploy/package.sh
 
 压缩包会生成到 `release/`，并排除 `node_modules`、构建产物、本地数据库、上传文件等运行数据。
 
-## 统一认证预留
-
-系统已预留学校统一认证 OAuth2/OIDC 接入入口，默认关闭，不影响本地账号密码登录。现场拿到学校认证资料后，在后端环境变量中配置并启用：
-
-- `SSO_ENABLED=true`
-- `SSO_AUTHORIZATION_URL`
-- `SSO_TOKEN_URL`
-- `SSO_USERINFO_URL`
-- `SSO_CLIENT_ID`
-- `SSO_CLIENT_SECRET`
-- `SSO_REDIRECT_URI`
-- `SSO_FRONTEND_CALLBACK_URL`
-
-后端入口为 `/api/v1/auth/sso/start`，回调入口为 `/api/v1/auth/sso/callback`。登录页会在后端返回 SSO 已启用时显示“统一认证登录”按钮。
-
 ## 部署
 
 部署说明见：
