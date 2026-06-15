@@ -65,7 +65,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { postJson } from '../../api/client'
+import { projectsApi } from '../../api/projects'
 
 const formRef = ref()
 const loading = ref(false)
@@ -123,7 +123,7 @@ async function submit() {
   resultSummary.value = ''
   processError.value = ''
   try {
-    const data = await runLotteryProgress(() => postJson('/projects', form))
+    const data = await runLotteryProgress(() => projectsApi.create(form))
     resultNotice.value = data.result_notice
     resultSummary.value = data.latest_record?.winner_supplier_name
       ? `中选供应商：${data.latest_record.winner_supplier_name}`

@@ -18,7 +18,12 @@ COPYFILE_DISABLE=1 zip -qry "${OUTPUT_DIR}/${PACKAGE_NAME}" "$PROJECT_NAME" \
   -x "${PROJECT_NAME}/backend/dist/*" \
   -x "${PROJECT_NAME}/backend/uploads/*" \
   -x "${PROJECT_NAME}/backend/prisma/*.db" \
+  -x "${PROJECT_NAME}/backend/prisma/*.db-*" \
   -x "${PROJECT_NAME}/backend/.env" \
+  -x "${PROJECT_NAME}/**/.env" \
+  -x "${PROJECT_NAME}/**/*.pem" \
+  -x "${PROJECT_NAME}/**/*.key" \
+  -x "${PROJECT_NAME}/**/id_rsa*" \
   -x "${PROJECT_NAME}/frontend/node_modules/*" \
   -x "${PROJECT_NAME}/frontend/dist/*" \
   -x "${PROJECT_NAME}/frontend/tmp-vite-check/*" \

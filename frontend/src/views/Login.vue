@@ -17,6 +17,9 @@
         <el-button type="primary" size="large" style="width:100%; margin-top:8px;" :loading="loading" @click="submit">
           登录
         </el-button>
+        <el-button size="large" style="width:100%; margin-top:12px;" @click="loginWithSso">
+          统一认证登录
+        </el-button>
       </el-form>
     </div>
   </section>
@@ -25,6 +28,7 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { API_BASE } from '../api/request'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
@@ -40,5 +44,9 @@ async function submit() {
   } finally {
     loading.value = false
   }
+}
+
+function loginWithSso() {
+  window.location.href = `${API_BASE}/sso/login`
 }
 </script>

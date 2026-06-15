@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Put, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '../common/auth.guard'
 import { CurrentUser } from '../common/current-user.decorator'
+import type { CurrentUserEntity } from '../common/current-user.type'
 import { Roles } from '../common/roles.decorator'
 import { RolesGuard } from '../common/roles.guard'
 import { CreateUserDto, UpdateActiveDto, UpdateRoleDto } from './users.dto'
@@ -23,12 +24,12 @@ export class UsersController {
   }
 
   @Put(':id/role')
-  updateRole(@CurrentUser() user: any, @Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
+  updateRole(@CurrentUser() user: CurrentUserEntity, @Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
     return this.usersService.updateRole(user, id, dto)
   }
 
   @Patch(':id/active')
-  updateActive(@CurrentUser() user: any, @Param('id', ParseIntPipe) id: number, @Body() dto: UpdateActiveDto) {
+  updateActive(@CurrentUser() user: CurrentUserEntity, @Param('id', ParseIntPipe) id: number, @Body() dto: UpdateActiveDto) {
     return this.usersService.updateActive(user, id, dto)
   }
 }

@@ -3,7 +3,8 @@ import { useAuthStore } from '../stores/auth'
 
 const routes = [
   { path: '/login', component: () => import('../views/Login.vue'), meta: { public: true } },
-  { path: '/', redirect: () => (localStorage.getItem('user')?.includes('admin') ? '/admin/projects' : '/user/submit') },
+  { path: '/sso/callback', component: () => import('../views/SsoCallback.vue'), meta: { public: true } },
+  { path: '/', redirect: () => (useAuthStore().isAdmin ? '/admin/projects' : '/user/submit') },
   { path: '/user/submit', component: () => import('../views/user/UserSubmit.vue'), meta: { role: 'user' } },
   { path: '/user/projects', component: () => import('../views/user/UserProjects.vue'), meta: { role: 'user' } },
   { path: '/admin/suppliers', component: () => import('../views/admin/AdminSuppliers.vue'), meta: { admin: true } },

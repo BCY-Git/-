@@ -160,7 +160,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { api, downloadFile, postJson } from '../../api/client'
+import { projectsApi } from '../../api/projects'
 import NoticeDetail from '../../components/NoticeDetail.vue'
 
 const items = ref([])
@@ -214,9 +214,7 @@ const pagedItems = computed(() => {
 
 async function load() {
   // 管理端项目列表按筛选条件读取全量项目，前端只负责当前页分页展示。
-  const params = new URLSearchParams()
-  Object.entries(filters).forEach(([key, value]) => value && params.append(key, value))
-  items.value = await api(`/projects?${params.toString()}`)
+  items.value = await projectsApi.list(filters)
   pagination.page = 1
 }
 
@@ -262,7 +260,7 @@ function openMaterials(row) {
 
 async function downloadAttachment(file) {
   // 材料下载走后端鉴权接口，避免直接暴露上传目录。
-  await downloadFile(`/rerun-requests/${materialsRequest.value.id}/files/${file.id}`, file.original_name)
+  await projectsApi.downloadRerunAttachment(materialsRequest.value.id, file.id, file.original_name)
 }
 
 async function submitLottery() {
@@ -278,7 +276,7 @@ async function submitLottery() {
   processError.value = ''
   lotteryLoading.value = true
   try {
-    const data = await runLotteryProgress(() => postJson('/projects', lotteryForm))
+    const data = await runLotteryProgress(() => projectsApi.create(lotteryForm))
     resultNotice.value = data.result_notice
     resultSummary.value = data.latest_record?.winner_supplier_name
       ? `中选供应商：${data.latest_record.winner_supplier_name}`

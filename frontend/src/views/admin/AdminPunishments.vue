@@ -53,7 +53,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { api, deleteJson, patchJson, postJson, putJson } from '../../api/client'
+import { punishmentsApi } from '../../api/punishments'
+import { suppliersApi } from '../../api/suppliers'
 import { useAuthStore } from '../../stores/auth'
 
 const items = ref([])
@@ -71,7 +72,7 @@ const dateRange = computed({
 })
 
 async function load() {
-  ;[items.value, suppliers.value] = await Promise.all([api('/punishments'), api('/suppliers')])
+  ;[items.value, suppliers.value] = await Promise.all([punishmentsApi.list(), suppliersApi.list()])
 }
 
 function openCreate() {
@@ -88,10 +89,10 @@ function openEdit(row) {
 
 async function save() {
   if (editing.value?.id) {
-    await putJson(`/punishments/${editing.value.id}`, form)
+    await punishmentsApi.update(editing.value.id, form)
     ElMessage.success('已保存')
   } else {
-    await postJson('/punishments', form)
+    await punishmentsApi.create(form)
     ElMessage.success('已保存，已发送站内通知')
   }
   visible.value = false
@@ -100,14 +101,14 @@ async function save() {
 
 async function remove(row) {
   await ElMessageBox.confirm('确认删除该处罚记录？', '删除处罚')
-  await deleteJson(`/punishments/${row.id}`)
+  await punishmentsApi.remove(row.id)
   ElMessage.success('已删除')
   await load()
 }
 
 async function lift(row) {
   await ElMessageBox.confirm(`确认解除“${row.supplier_name}”当前处罚？解除后该供应商可参与后续抽取。`, '解除处罚')
-  await patchJson(`/punishments/${row.id}/lift`, {})
+  await punishmentsApi.lift(row.id)
   ElMessage.success('已解除处罚，已发送站内通知')
   await load()
 }

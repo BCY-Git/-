@@ -16,7 +16,11 @@ async function bootstrap() {//这里的bootstrap是入口函数
     })
   )
   const port = Number(process.env.PORT || 8000)
-  await app.listen(port, '0.0.0.0')
+  const host = process.env.BACKEND_HOST || process.env.HOST || '127.0.0.1'
+  await app.listen(port, host)
 }
 
-bootstrap()
+bootstrap().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})

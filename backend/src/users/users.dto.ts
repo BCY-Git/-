@@ -9,9 +9,6 @@ export class CreateUserDto {
   @MinLength(6)
   password: string
 
-  @IsIn(['admin', 'user'])
-  role: string
-
   @IsOptional()
   @IsString()
   display_name?: string

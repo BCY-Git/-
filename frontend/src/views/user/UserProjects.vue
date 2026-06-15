@@ -100,7 +100,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AlertTriangle from 'lucide-vue-next/dist/esm/icons/triangle-alert.js'
-import { api, postJson, uploadForm } from '../../api/client'
+import { projectsApi } from '../../api/projects'
 import NoticeDetail from '../../components/NoticeDetail.vue'
 
 const items = ref([])
@@ -116,7 +116,7 @@ const rerunLoadingId = ref(null)
 
 async function load() {
   // 我的项目只读取当前登录用户提交的项目。
-  items.value = await api('/projects/mine')
+  items.value = await projectsApi.mine()
 }
 
 function show(row) {
@@ -191,7 +191,7 @@ async function submitRerunRequest() {
 
   requestLoading.value = true
   try {
-    await uploadForm(`/projects/${requestProject.value.id}/rerun-requests`, body)
+    await projectsApi.uploadRerunRequest(requestProject.value.id, body)
     ElMessage.success('项目验收材料已上传，可发起二次抽取')
     requestVisible.value = false
     await load()
@@ -205,7 +205,7 @@ async function rerun(row) {
   await ElMessageBox.confirm(`确认对“${row.name}”发起二次抽取？`, '二次抽取')
   rerunLoadingId.value = row.id
   try {
-    const data = await postJson(`/projects/${row.id}/rerun`, {})
+    const data = await projectsApi.rerun(row.id)
     selected.value = data
     visible.value = true
     ElMessage.success(data.latest_record?.winner_supplier_name ? '二次抽取完成' : '当前无符合条件供应商')

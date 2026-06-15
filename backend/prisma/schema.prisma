@@ -6,7 +6,7 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
-
+// 供应商管理系统数据库模型定义
 model User {
   id           Int      @id @default(autoincrement())
   username     String   @unique
@@ -14,7 +14,14 @@ model User {
   role         String   @default("user")
   displayName  String?
   email        String?
+  ssoProvider  String?
+  ssoUserUuid  String?  @unique
+  ssoLoginName String?
+  ssoUnitUuid  String?
+  ssoUnitName  String?
+  ssoTelephone String?
   isActive     Boolean  @default(true)
+  tokenVersion Int      @default(0)
   createdAt    DateTime @default(now())
 
   projects      Project[]
@@ -40,6 +47,7 @@ model Supplier {
   punishments    Punishment[]
   lotteryRecords LotteryRecord[]
 }
+
 
 model Punishment {
   id         Int      @id @default(autoincrement())

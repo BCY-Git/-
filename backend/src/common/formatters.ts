@@ -1,3 +1,5 @@
+import { BadRequestException } from '@nestjs/common'
+
 export function toUserRead(user: any) {
   const { passwordHash, ...rest } = user
   return {
@@ -6,6 +8,12 @@ export function toUserRead(user: any) {
     role: rest.role,
     display_name: rest.displayName,
     email: rest.email,
+    sso_provider: rest.ssoProvider,
+    sso_user_uuid: rest.ssoUserUuid,
+    sso_login_name: rest.ssoLoginName,
+    unit_uuid: rest.ssoUnitUuid,
+    unit_name: rest.ssoUnitName,
+    telephone: rest.ssoTelephone,
     is_active: rest.isActive,
     created_at: rest.createdAt
   }
@@ -123,9 +131,19 @@ export function toNotificationRead(item: any) {
 }
 
 export function dateOnly(value: Date) {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+    throw new BadRequestException('日期格式无效')
+  }
   return value.toISOString().slice(0, 10)
 }
 
 export function parseDateOnly(value: string) {
-  return new Date(`${value}T00:00:00.000Z`)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) {
+    throw new BadRequestException('日期格式必须为 YYYY-MM-DD')
+  }
+  const date = new Date(`${value}T00:00:00.000Z`)
+  if (Number.isNaN(date.getTime()) || dateOnly(date) !== value) {
+    throw new BadRequestException('日期格式无效')
+  }
+  return date
 }

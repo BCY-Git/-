@@ -6,9 +6,11 @@ import { NotificationsModule } from './notifications/notifications.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { ProjectsModule } from './projects/projects.module'
 import { PunishmentsModule } from './punishments/punishments.module'
+import { SsoModule } from './sso/sso.module'
 import { SuppliersModule } from './suppliers/suppliers.module'
 import { UsersModule } from './users/users.module'
 import { AppController } from './app.controller'
+import { HelloModule } from './hello/hello.module';
 
 function getJwtSecret() {
   const secret = process.env.JWT_SECRET?.trim()
@@ -36,7 +38,9 @@ function getJwtSecret() {
     SuppliersModule,
     PunishmentsModule,
     ProjectsModule,
-    NotificationsModule
+    NotificationsModule,
+    SsoModule,
+    HelloModule
   ],
   controllers: [AppController]
 })

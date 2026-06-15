@@ -53,14 +53,14 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { api, patchJson, postJson, putJson } from '../../api/client'
+import { usersApi } from '../../api/users'
 
 const items = ref([])
 const visible = ref(false)
 const form = reactive({ username: '', password: '', display_name: '', email: '', role: 'user', is_active: true })
 
 async function load() {
-  items.value = await api('/users')
+  items.value = await usersApi.list()
 }
 
 function openCreate() {
@@ -69,19 +69,28 @@ function openCreate() {
 }
 
 async function save() {
-  await postJson('/users', { ...form, username: form.username.trim() })
+  const created = await usersApi.create({
+    username: form.username.trim(),
+    password: form.password,
+    display_name: form.display_name,
+    email: form.email,
+    is_active: form.is_active
+  })
+  if (form.role === 'admin') {
+    await usersApi.updateRole(created.id, { role: 'admin' })
+  }
   ElMessage.success('用户已创建')
   visible.value = false
   await load()
 }
 
 async function updateRole(row) {
-  await putJson(`/users/${row.id}/role`, { role: row.role })
+  await usersApi.updateRole(row.id, { role: row.role })
   ElMessage.success('角色已更新')
 }
 
 async function updateActive(row) {
-  await patchJson(`/users/${row.id}/active`, { is_active: row.is_active })
+  await usersApi.updateActive(row.id, { is_active: row.is_active })
   ElMessage.success('状态已更新')
 }
 

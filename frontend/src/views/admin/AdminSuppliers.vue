@@ -95,7 +95,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { api, deleteJson, postJson, putJson } from '../../api/client'
+import { punishmentsApi } from '../../api/punishments'
+import { suppliersApi } from '../../api/suppliers'
 
 const items = ref([])
 const visible = ref(false)
@@ -124,7 +125,7 @@ function nextRank() {
 
 async function load() {
   // 供应商列表包含资质、负荷和处罚状态，是抽取候选池的维护入口。
-  items.value = await api('/suppliers')
+  items.value = await suppliersApi.list()
 }
 
 function openCreate() {
@@ -155,8 +156,8 @@ function openPunish(row) {
 
 async function save() {
   // 通过是否存在 id 区分新增和编辑，后端统一返回规范供应商结构。
-  if (editing.value?.id) await putJson(`/suppliers/${editing.value.id}`, form)
-  else await postJson('/suppliers', form)
+  if (editing.value?.id) await suppliersApi.update(editing.value.id, form)
+  else await suppliersApi.create(form)
   ElMessage.success('已保存')
   visible.value = false
   await load()
@@ -165,7 +166,7 @@ async function save() {
 async function remove(row) {
   // 删除是软删除，历史抽取记录仍能保留供应商引用。
   await ElMessageBox.confirm(`确认删除 ${row.name}？`, '删除供应商')
-  await deleteJson(`/suppliers/${row.id}`)
+  await suppliersApi.remove(row.id)
   ElMessage.success('已删除')
   await load()
 }
@@ -176,7 +177,7 @@ async function savePunishment() {
     ElMessage.warning('请选择处罚日期')
     return
   }
-  await postJson('/punishments', punishForm)
+  await punishmentsApi.create(punishForm)
   ElMessage.success('已处罚，已发送站内通知')
   punishVisible.value = false
   await load()

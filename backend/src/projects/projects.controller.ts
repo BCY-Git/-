@@ -18,6 +18,14 @@ mkdirSync(uploadDir, { recursive: true })
 // 二次抽取材料按现场要求只接收 PDF，保存到后端本地上传目录。
 const allowedExtensions = new Set(['.pdf'])
 
+function safeDownloadName(filename: string) {
+  const value = String(filename || 'download.pdf')
+    .replace(/[\\/:*?"<>|\r\n]/g, '_')
+    .replace(/^\.+/, '')
+    .slice(0, 120)
+  return value || 'download.pdf'
+}
+
 async function resolveUploadFilePath(filePath: string) {
   const [uploadRoot, targetPath] = await Promise.all([realpath(uploadDir), realpath(filePath)])
   const relativePath = relative(uploadRoot, targetPath)
@@ -124,7 +132,7 @@ export class ProjectsController {
   ) {
     // 验收材料下载入口：先做业务鉴权，再交给 Express 下载文件。
     const file = await this.projectsService.getRerunAttachment(user, id, fileId)
-    return res.download(await resolveUploadFilePath(file.filePath), file.originalName)
+    return res.download(await resolveUploadFilePath(file.filePath), safeDownloadName(file.originalName))
   }
 
   @Get('lottery-records')

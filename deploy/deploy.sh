@@ -11,6 +11,8 @@ NGINX_CONF="${NGINX_CONF:-/etc/nginx/conf.d/${APP_NAME}.conf}"
 BACKEND_PORT="${BACKEND_PORT:-8000}"
 SERVER_NAME="${SERVER_NAME:-_}"
 OPEN_FIREWALL="${OPEN_FIREWALL:-1}"
+RUN_USER="${RUN_USER:-${APP_NAME}}"
+RUN_GROUP="${RUN_GROUP:-${RUN_USER}}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -70,6 +72,17 @@ prepare_dirs() {
   mkdir -p "$APP_DIR" "$WEB_DIR" "$DATA_DIR/uploads/rerun-requests" "$ENV_DIR"
 }
 
+prepare_user() {
+  if ! getent group "$RUN_GROUP" >/dev/null 2>&1; then
+    log "创建运行用户组：${RUN_GROUP}"
+    groupadd --system "$RUN_GROUP"
+  fi
+  if ! id -u "$RUN_USER" >/dev/null 2>&1; then
+    log "创建低权限运行用户：${RUN_USER}"
+    useradd --system --gid "$RUN_GROUP" --home-dir "$APP_DIR" --shell /sbin/nologin "$RUN_USER"
+  fi
+}
+
 copy_source() {
   log "复制项目文件到 ${APP_DIR}"
   if command -v rsync >/dev/null 2>&1; then
@@ -122,11 +135,23 @@ SMTP_PASSWORD=
 SMTP_TLS=false
 EOF
     chmod 600 "$env_file"
+    chown root:"$RUN_GROUP" "$env_file"
+    chmod 640 "$env_file"
     printf '%s\n' "初始超级管理员：admin"
     printf '%s\n' "初始密码：${admin_password}"
   else
     log "环境变量文件已存在，保留原配置：${env_file}"
   fi
+  chown root:"$RUN_GROUP" "$env_file"
+  chmod 640 "$env_file"
+}
+
+fix_permissions() {
+  log "设置运行目录权限"
+  chown -R "$RUN_USER:$RUN_GROUP" "$APP_DIR" "$DATA_DIR"
+  chown -R root:root "$WEB_DIR"
+  find "$WEB_DIR" -type d -exec chmod 755 {} \;
+  find "$WEB_DIR" -type f -exec chmod 644 {} \;
 }
 
 load_env() {
@@ -173,8 +198,8 @@ EnvironmentFile=${ENV_DIR}/backend.env
 ExecStart=${node_bin} dist/main.js
 Restart=always
 RestartSec=5
-User=root
-Group=root
+User=${RUN_USER}
+Group=${RUN_GROUP}
 
 [Install]
 WantedBy=multi-user.target
@@ -261,10 +286,12 @@ main() {
   need_root
   check_runtime
   prepare_dirs
+  prepare_user
   copy_source
   write_env
   load_env
   install_and_build
+  fix_permissions
   write_systemd
   write_nginx
   open_firewall

@@ -79,7 +79,7 @@ import FolderClock from 'lucide-vue-next/dist/esm/icons/folder-clock.js'
 import ListChecks from 'lucide-vue-next/dist/esm/icons/list-checks.js'
 import ShieldAlert from 'lucide-vue-next/dist/esm/icons/shield-alert.js'
 import UsersRound from 'lucide-vue-next/dist/esm/icons/users-round.js'
-import { api, putJson } from './api/client'
+import { notificationsApi } from './api/notifications'
 import { useAuthStore } from './stores/auth'
 
 const route = useRoute()
@@ -106,13 +106,13 @@ const currentSection = computed(() => {
 })
 
 async function loadNotifications() {
-  const data = await api('/notifications')
+  const data = await notificationsApi.list()
   notifications.value = data.items
   unreadCount.value = data.unread_count
 }
 
 async function readAll() {
-  await putJson('/notifications/read-all', {})
+  await notificationsApi.readAll()
   await loadNotifications()
 }
 

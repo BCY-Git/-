@@ -26,11 +26,11 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { api } from '../../api/client'
+import { projectsApi } from '../../api/projects'
 
 const items = ref([])
 async function load() {
-  items.value = await api('/lottery-records')
+  items.value = await projectsApi.lotteryRecords()
 }
 onMounted(load)
 </script>
